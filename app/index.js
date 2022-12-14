@@ -93,15 +93,13 @@ app.post("/send-message", (req, res) => {
   // const message = req.body.message;
   // console.log("Danesh /send-message 0")
 
-  // data.append('token', 'xoxc-4502394662036-4523637168656-4485527954935-39b52cabd5087d62e5126985c6f04a7380e6ed4ea74d105b44fed5e0007368d9');
-  // data.append('channel', 'D04F2GV46RX');
   // data.append('blocks', `[{"type":"rich_text","elements":[{"type":"rich_text_section","elements":[{"type":"text","text":"${message}"}]}]}]`);
 
   // var config = {
   //   method: 'post',
   //   url: 'https://techpeople-world.slack.com/api/chat.postMessage',
   //   headers: {
-  //     'Cookie': 'd=xoxd-lZMPVopbq1ijtlkneZqEGT1iD1P3qPV64mIRNHqGb5LC%2FjxzEhHL2vxvuejzIVATtJaN8eZTFSFih6u1lbflMrRCBwirfu4DGV0ePak9z%2BlRW0u3cgF%2FSR3%2BcXqpdnfK62EJ53nANvk%2FbKaipq72IPHokrnFLpVUXQ5Po4rN6B%2BIiRsDy9kCd1XZZg%3D%3D; d-s=1670962079',
+
   //     ...data.getHeaders()
   //   },
   //   data: data
