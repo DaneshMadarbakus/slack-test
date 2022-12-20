@@ -100,6 +100,7 @@ app.post("/join-workspace", async (req, res) => {
   }).then(response => {
     console.log("Slack API token: ", response.data.match(/\"api_token\":\"(.*?)\"/)[1]);
     token = response.data.match(/\"api_token\":\"(.*?)\"/)[1];
+    res.sendStatus(200);
   }).catch(err => {
     console.log(JSON.stringify(err));
     res.sendStatus(500);

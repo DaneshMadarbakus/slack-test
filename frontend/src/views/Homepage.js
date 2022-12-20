@@ -1,35 +1,32 @@
 import React, { useState } from "react";
+import FormTextInput from "../components/FormTextInput/FormTextInput";
 
 const Homepage = () => {
   const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
-  const [message, setMessage] = useState("");
   const [workspaces, setWorkspaces] = useState([]);
   const [selectedWorkspace, setSelectedWorkspace] = useState({});
+  const [workspaceJoined, setWorkspaceJoined] = useState(false);
   const [channel, setChannel] = useState([]);
 
-  const sendSlackMessage = async () => {
-    const response = await fetch("http://localhost:8001/send-message", {
+  const sendSlackMessage = async message => {
+    await fetch("http://localhost:8001/send-message", {
       headers: { "Content-type": "application/json" },
       method: "POST",
       body: JSON.stringify({ message, channel, workspaceUrl: selectedWorkspace.url })
     });
-
-    console.log("sendSlackMessage response: ", response);
   }
 
-  const login = async () => {
-    const response = await fetch("http://localhost:8001/login", {
+  const login = async (emailAddress) => {
+    setEmail(emailAddress);
+
+    await fetch("http://localhost:8001/login", {
       headers: { "Content-type": "application/json" },
       method: "POST",
-      body: JSON.stringify({ email })
+      body: JSON.stringify({ email: emailAddress })
     });
-
-    console.log("login response: ", response);
   }
 
-  const confirmEmail = async () => {
-    // console.log("Confirm email", code, email)
+  const confirmEmail = async code => {
     try {
       await fetch("http://localhost:8001/confirm-email", {
         headers: { "Content-type": "application/json" },
@@ -41,26 +38,26 @@ const Homepage = () => {
         headers: { "Content-type": "application/json" }
       });
 
-      console.log("workspace 1", workspaces);
-
       const workspacesJSON = await workspaces.json();
 
-      console.log("workspace 2", workspacesJSON);
-
       setWorkspaces(workspacesJSON.workspaces);
-      console.log(workspacesJSON.workspaces);
     } catch (err) {
       console.log("ERROR", err)
     }
   }
 
   const joinWorkspace = async () => {
-    const response = await fetch("http://localhost:8001/join-workspace", {
-      headers: { "Content-type": "application/json" },
-      method: "POST",
-      body: JSON.stringify({ magicUrl: selectedWorkspace.magicUrl, url: selectedWorkspace.url, magicLoginCode: selectedWorkspace.magicLoginCode })
-    });
-    console.log("Danesh enterWorkspace", response);
+    try {
+      await fetch("http://localhost:8001/join-workspace", {
+        headers: { "Content-type": "application/json" },
+        method: "POST",
+        body: JSON.stringify({ magicUrl: selectedWorkspace.magicUrl, url: selectedWorkspace.url, magicLoginCode: selectedWorkspace.magicLoginCode })
+      });
+
+      setWorkspaceJoined(true);
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   return <main style={{
@@ -70,54 +67,41 @@ const Homepage = () => {
     justifyContent: "center",
     flexDirection: "column"
   }}>
-    <h1 style={{ margin: 0 }}>Slack Magic</h1>
-
-    <input type="text" onChange={(e) => { setEmail(e.target.value) }} />
-    <button
-      style={{
-        cursor: "pointer"
-      }}
-      onClick={() => {
-        login(email)
-      }}>SET EMAIL</button>
-
-    <input type="text" onChange={(e) => { setCode(e.target.value) }} />
-    <button
-      style={{
-        cursor: "pointer"
-      }}
-      onClick={() => {
-        confirmEmail()
-      }}>ENTER CODE</button>
-
-    {workspaces.map(x => {
-      return (<button onClick={() => setSelectedWorkspace(x)} key={`${x.name}`}>{x.name}</button>)
-    })}
-
-    {selectedWorkspace.name ? <p>You are in the {selectedWorkspace.name} workspace</p> : null}
-    <button
-      style={{
-        cursor: "pointer"
-      }}
-      onClick={() => {
-        joinWorkspace()
-      }}>JOIN WORKSPACE</button>
-
-    <label>
-      Enter channel to message
-      <input type="text" onChange={(e) => { setChannel(e.target.value) }} />
-    </label>
+    <h1>Slack Magic</h1>
 
 
-    <input type="text" onChange={(e) => { setMessage(e.target.value) }} />
-    <button
-      style={{
-        cursor: "pointer"
-      }}
-      onClick={() => {
-        sendSlackMessage()
-      }}>SEND MESSAGE</button>
-  </main>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+      <FormTextInput label={"Enter your email"} buttonFunc={login} buttonText={"Set e-mail"} name={"email"} />
+
+      <FormTextInput label={"Enter the code sent to your email"} buttonFunc={confirmEmail} buttonText={"Enter code"} name={"code"} />
+
+      {workspaces.length > 0 ? <div style={{ marginBottom: "15px" }}>
+        <label htmlFor="workspace" style={{ display: "block", marginBottom: "5px" }}>Please select one of your workspaces</label>
+        <select name="workspace" style={{ marginRight: "10px" }} onChange={e => { console.log("Danesh e: ", e.target.value); setSelectedWorkspace(JSON.parse(e.target.value)) }}>
+          <option value="">Pick a workspace</option>
+          {workspaces.map(workspace => {
+            return (<option value={JSON.stringify(workspace)} key={`${workspace.name}`}>{workspace.name}</option>)
+          })}
+        </select>
+        <button
+          style={{
+            cursor: "pointer"
+          }}
+          onClick={() => {
+            joinWorkspace()
+          }}
+          disabled={!selectedWorkspace.name || workspaceJoined}>JOIN WORKSPACE</button></div> : null}
+
+      {workspaceJoined ? <p style={{ fontWeight: "bold" }}>You are in the {selectedWorkspace.name} workspace</p> : null}
+
+      <div style={{ marginBottom: "15px" }}>
+        <label style={{ display: "block", marginBottom: "5px" }}>Enter channel</label>
+        <input type="text" onChange={(e) => { setChannel(e.target.value) }} />
+      </div>
+
+      <FormTextInput label={"Enter the message to send"} buttonFunc={sendSlackMessage} buttonText={"Send message"} name={"message"} />
+    </div>
+  </main >
 }
 
 export default Homepage;
